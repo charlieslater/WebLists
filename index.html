@@ -1,0 +1,33 @@
+<!DOCTYPE html> 
+{% autoescape true %} 
+<html>
+  <body>
+    {% for c in ListContents %}
+        {% if c.author %}
+          <b>{{ c.author.nickname() }}</b> wrote:
+        {% else %} 
+        Anonymous added:
+        {% endif %} 
+        <blockquote>{{ c.content }}</blockquote>
+    {% endfor %}
+
+    <head>
+      <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+    </head>
+
+    <form action=?/add?list_name={{ list_name }}" method="post">
+      <div><textarea name="content" rows="1" cols="60"></textarea></div>
+      <div><input type="submit" value="Add To List"></div>
+    </form>
+
+    <hr>
+
+    <form>List name: 
+      <input value="{{ list_name }}" name="list_name">
+      <input type="submit" value="switch">
+    </form>
+
+    <a href="{{ url|safe }}">{{ url_linktext }}</a>
+  </body>
+</html>
+{% endautoescape %} 

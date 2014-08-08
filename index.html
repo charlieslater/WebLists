@@ -1,23 +1,42 @@
 <!DOCTYPE html> 
 {% autoescape true %} 
 <html>
+<head>
+  <link type="text/css" rel="stylesheet" href="/stylesheets/main.css"
+</head>
   <body>
-    <form>List name: 
+    <form align="right">
       <input value="{{ list_name }}" name="list_name">
-      <input type="submit" value="switch">
+      <input type="submit" value="change list">
+    </form>
+    <h1> {{title}}</h1>
+    
+    <form align="center" action=?list_name={{ list_name }} method="post">
+    <ol>
+    <table align = "center"> 
+    {% for c in listcontents %}
+       <tr align = "left"><td>
+       <li>
+       {% if c.checked %}
+         <strike> {{ c.content }} </strike>
+         <input type = "checkbox" name = "{{c.content}}" checked>
+       {% else %}
+         {{ c.content }}
+         <input type = "checkbox" name = "{{c.content}}" > 
+       {% endif %}
+       <a href="/delete?list_name={{ list_name }}&urlString={{urlStrings[c.content]}}">
+       <img src= "images/trashcan.png" alt= "Trash Can" height="14" width="14"> </li>
+       </a>
+       </td></tr>
+    {% endfor %}
+    </table>
+    </ol>
+    <input type = "submit" value = "Check Them Off" >
     </form>
 
-    <head>
-      <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-    </head>
-
-    {% for c in listcontents %}
-        <blockquote>{{ c.content }}</blockquote>
-    {% endfor %}
-
-    <form action=add?list_name={{ list_name }} method="post">
-      <div><textarea name="content" rows="1" cols="60"></textarea></div>
-      <div><input type="submit" value="Add To List"></div>
+    <form action=add?list_name={{ list_name }} align="center" method="post">
+      <div><input type="submit" value="Add To List">
+      <textarea name="content" rows="1" cols="60"></textarea></div>
     </form>
 
     <hr>

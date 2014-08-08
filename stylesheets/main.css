@@ -1,4 +1,15 @@
+h1 {
+     color: Gold;
+     text-shadow: 5px 5px 5px #FF0000;
+     text-align: center;
+     font-family: "Calisto MT", "Bookman Old Style", Bookman, "Goudy Old Style", Garamond, "Hoefler Text", "Bitstream Charter", Georgia, serif;
+}
+
+li {
+    font-family: Cambria, Georgia, serif; 
+}
+
 body { 
     font-family: Verdana, Helvetica, san-serif; 
-    background-color: Blue;
+    background-color: Aqua;
 }

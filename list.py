@@ -28,20 +28,48 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 class MainPage(webapp2.RequestHandler):
 
+    def post(self):
+        self.get_list_stuff()
+        for c in self.listcontents:
+          checked_box = self.request.get(c.content)
+          if checked_box:
+            c.checked = True
+          else:
+            c.checked = False
+          c.put()  #?? do we need a put?  I don't think so.
+        self.display_list()
+
     def get(self):
+        print "MainPage:get: calling get_list_stuff"
+        self.get_list_stuff()
+        print "MainPage:get: calling display_list"
+        self.display_list()
+
+    def get_list_stuff(self):
         list_name = self.request.get('list_name', DEFAULT_LIST_NAME)
         print 'list name=', list_name
         listcontents_query = ListContent.query(
-            ancestor=list_key(list_name)).order(-ListContent.date)
+            ancestor=list_key(list_name)).order(ListContent.date)
         listcontents = listcontents_query.fetch(10)
+        self.list_name = list_name
+        self.listcontents = listcontents
+        #return (list_name, listcontents)
+        
+    def display_list(self):
+        # boxes = {'fun':True,  'happy':False, 'sad':True}
+        urlStrings = {}
+        for item in self.listcontents:
+           urlStrings[item.content] = item.key.urlsafe()
         if users.get_current_user():
             url = users.create_logout_url(self.request.uri)
             url_linktext = 'Logout' 
         else:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
-        list_query_params = urllib.urlencode({'list_name': list_name})
-        template_values = {"listcontents": listcontents, "list_query_params":list_query_params, "list_name":cgi.escape(list_name),
+        list_query_params = urllib.urlencode({'list_name': self.list_name})
+        #title = "Weblist Test"
+        title = self.list_name
+        template_values = {"urlStrings": urlStrings, "title": title, "listcontents": self.listcontents, "list_query_params":list_query_params, "list_name":cgi.escape(self.list_name),
                            "url":url, "url_link": url_linktext}         
           
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -52,9 +80,9 @@ DEFAULT_LIST_NAME = 'default_list'
 def list_key(list_name=DEFAULT_LIST_NAME):
     return ndb.Key('List', list_name)
 
-
 class ListContent(ndb.Model):
     author = ndb.UserProperty()
+    checked = ndb.BooleanProperty()
     content = ndb.StringProperty(indexed=False)
     date = ndb.DateTimeProperty(auto_now_add=True)
 
@@ -94,14 +122,26 @@ class Lists(webapp2.RequestHandler):
         if users.get_current_user():
             listcontent.author = users.get_current_user()
 
-        listcontent.content = self.request.get('content')
-        listcontent.put()
+        listcontent.content = self.request.get('content').strip()
+        if len(listcontent.content) > 0:
+            listcontent.put()
         
         query_params = {'list_name' : list_name}
         self.redirect('/?' + urllib.urlencode(query_params))
 
+class Delete(webapp2.RequestHandler):
+    def get(self):
+        urlString = self.request.get('urlString')
+        item_key = ndb.Key(urlsafe=urlString)
+        item_key.delete()
+        list_name = self.request.get('list_name',
+                                     DEFAULT_LIST_NAME)
+        query_params = {'list_name' : list_name}
+        self.redirect('/?' + urllib.urlencode(query_params))        
+
 application = webapp2.WSGIApplication([
     ('/', MainPage), 
     ('/add', Lists), 
+    ('/delete', Delete),
 ], debug=True)
 
